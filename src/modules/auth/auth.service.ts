@@ -1,29 +1,23 @@
 import * as bcrypt from 'bcrypt';
 import serverConfig from 'src/config';
 import { JwtService } from '@nestjs/jwt';
-import { LoginDto } from './dto/login.dto';
-import { SignUpDto } from './dto/signup.dto';
 import { TOKEN_EXPIRY } from 'src/constants/auth';
 import { PASSWORD_SALT } from 'src/constants/user';
 import { ERRORS, MESSAGES } from 'src/language/en';
-import { DatabaseService } from '../database/database.service';
+import { AuthRepository } from './auth.repository';
 import { ForbiddenException, Injectable } from '@nestjs/common';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
-
+import { ILogin, ISignUp } from './interface';
 
 @Injectable()
 export class AuthService {
   constructor(
-    private dbConn: DatabaseService,
+    private authRepository: AuthRepository,
     private jwtService: JwtService,
   ) {}
 
-  async login(data: LoginDto) {
-    const user = await this.dbConn.user.findUnique({
-      where: {
-        email: data.email,
-      },
-    });
+  async login(data: ILogin) {
+    const user = await this.authRepository.login(data);
 
     if (!user) {
       throw new ForbiddenException(ERRORS.INVALID_CREDENTIALS);
@@ -41,25 +35,18 @@ export class AuthService {
     return { accessToken, refreshToken };
   }
 
-  async signup(data: SignUpDto) {
+  async signup(data: ISignUp) {
     try {
       const salt = await bcrypt.genSalt(PASSWORD_SALT);
       const hashedPassword = await bcrypt.hash(data.password, salt);
 
-      await this.dbConn.user.create({
-        data: {
-          email: data.email,
-          password: hashedPassword,
-          firstName: data.firstName,
-          lastName: data.lastName,
-        },
-      });
+      await this.authRepository.signup({ ...data, password: hashedPassword });
 
       return { message: MESSAGES.SIGNUP_SUCCESS };
     } catch (error) {
       if (
         error instanceof PrismaClientKnownRequestError &&
-        error.code === 'P2002'
+        error.code === 'P2002' // prisma code for unique constraint error
       ) {
         throw new ForbiddenException(ERRORS.EMAIL_TAKEN);
       }

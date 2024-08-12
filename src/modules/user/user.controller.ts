@@ -1,32 +1,55 @@
-import { Body, Controller, Delete, Get, Param, Post, Put } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Param,
+  Put,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 import { UserService } from './user.service';
+import { AccessTokenGuard } from '../auth/guards';
+import { GetRequestUser } from 'src/shared/decorator';
+import { UpdateUserDto } from './dto';
+import { PaginationQuery } from 'src/shared/interface';
 
 @Controller('user')
 export class UserController {
-    constructor(private userService: UserService){}
+  constructor(private userService: UserService) {}
 
-    @Get()
-    fetchAll() {
-        return this.userService.fetchAll()
-    }
+  @Get()
+  fetchAll(@Query() query: PaginationQuery) {
+    return this.userService.fetchAll(query);
+  }
 
-    @Get('/me')
-    fetchMyDetails(){
-        return this.userService.fetchMyDetails()
-    }
-    
-    @Get(':id')
-    fetchById(@Param('id') id: number){
-        return this.userService.fetchById(id)
-    }
+  @UseGuards(AccessTokenGuard)
+  @Get('/me')
+  fetchMyDetails(@GetRequestUser('id') userId: number) {
+    return this.userService.fetchMyDetails(userId);
+  }
 
-    @Put()
-    update(){
-        return this.userService.update()
-    }
+  @Get(':id')
+  fetchById(@Param('id') id: number) {
+    return this.userService.fetchById(Number(id));
+  }
 
-    @Delete()
-    delete(){
-        return this.userService.delete()
-    }
+  @UseGuards(AccessTokenGuard)
+  @Put()
+  @HttpCode(HttpStatus.OK)
+  update(
+    @GetRequestUser('id') userId: number,
+    @Body() updateUserDto: UpdateUserDto,
+  ) {
+    return this.userService.update(userId, updateUserDto);
+  }
+
+  @UseGuards(AccessTokenGuard)
+  @Delete()
+  @HttpCode(HttpStatus.OK)
+  delete(@GetRequestUser('id') userId: number) {
+    return this.userService.delete(userId);
+  }
 }

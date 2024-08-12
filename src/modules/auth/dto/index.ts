@@ -1,5 +1,4 @@
-import { SignUpDto } from "./signup.dto";
+import { LoginDto } from './login.dto';
+import { SignUpDto } from './signup.dto';
 
-export const AuthDto = {
-    SignUpDto
-};
+export { SignUpDto, LoginDto };

@@ -1,5 +1,3 @@
-import { UpdateUserDto } from "./update-user.dto";
+import { UpdateUserDto } from './update-user.dto';
 
-export const UserDto = {
-    UpdateUserDto
-};
+export { UpdateUserDto };
