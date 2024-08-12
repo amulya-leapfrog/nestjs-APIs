@@ -1,0 +1,20 @@
+version: '3'
+services:
+  test-db:
+    image: mysql:8.0
+    restart: always
+    environment:
+      MYSQL_DATABASE: 'test-db'
+      MYSQL_ROOT_PASSWORD: 'password'
+    ports:
+      - '3306:3306'
+    expose:
+      - '3306'
+    volumes:
+      - test-db:/var/lib/mysql
+
+volumes:
+  test-db:
+    driver: local
+
+
