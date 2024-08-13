@@ -1,24 +1,23 @@
 import {
-  ConflictException,
-  ForbiddenException,
   Injectable,
   NotFoundException,
+  ForbiddenException,
 } from '@nestjs/common';
-import { DatabaseService } from '../database/database.service';
-import { userRepository } from './user.repository';
+import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
+
 import {
   buildMeta,
   extractUserData,
   getPaginationOptions,
 } from 'src/util/dbHelper';
-import { ERRORS, MESSAGES } from 'src/language/en';
 import { IUpdateUser } from './interface';
-import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
+import { UserRepository } from './user.repository';
+import { ERRORS, MESSAGES } from 'src/language/en';
 import { PaginationQuery } from 'src/shared/interface';
 
 @Injectable()
 export class UserService {
-  constructor(private userRepository: userRepository) {}
+  constructor(private userRepository: UserRepository) {}
 
   async fetchAll(query: PaginationQuery) {
     const { page, size } = query;
@@ -26,7 +25,7 @@ export class UserService {
     const paginationOption = getPaginationOptions({ page, size });
 
     const dataPromise = this.userRepository.fetchAll(paginationOption);
-    const totalCountPromise = this.userRepository.countAll(paginationOption);
+    const totalCountPromise = this.userRepository.countAll();
 
     const [data, totalCount] = await Promise.all([
       dataPromise,

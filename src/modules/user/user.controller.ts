@@ -1,19 +1,20 @@
 import {
-  Body,
-  Controller,
-  Delete,
   Get,
-  HttpCode,
-  HttpStatus,
-  Param,
   Put,
+  Body,
+  Param,
   Query,
+  Delete,
+  HttpCode,
   UseGuards,
+  Controller,
+  HttpStatus,
 } from '@nestjs/common';
+
+import { UpdateUserDto } from './dto';
 import { UserService } from './user.service';
 import { AccessTokenGuard } from '../auth/guards';
 import { GetRequestUser } from 'src/shared/decorator';
-import { UpdateUserDto } from './dto';
 import { PaginationQuery } from 'src/shared/interface';
 
 @Controller('user')

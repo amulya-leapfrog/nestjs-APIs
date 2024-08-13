@@ -1,11 +1,11 @@
 import { Injectable } from '@nestjs/common';
-import { DatabaseService } from '../database/database.service';
+
 import { IUpdateUser } from './interface';
-import { getCurrentTime } from 'src/util/dbHelper';
 import { Pagination } from 'src/shared/interface';
+import { DatabaseService } from '../database/database.service';
 
 @Injectable()
-export class userRepository {
+export class UserRepository {
   constructor(private dbConn: DatabaseService) {}
 
   fetchAll(pagination: Pagination) {
@@ -20,11 +20,8 @@ export class userRepository {
     });
   }
 
-  countAll(pagination: Pagination) {
-    return this.dbConn.user.count({
-      take: pagination.limit,
-      skip: pagination.offset,
-    });
+  countAll() {
+    return this.dbConn.user.count();
   }
 
   fetchMyDetails(id: number) {
