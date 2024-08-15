@@ -2,9 +2,9 @@ import serverConfig from 'src/config';
 import { ForbiddenException, Injectable } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
-import { TOKEN_STRATEGY } from 'src/constants/auth';
-import { DatabaseService } from 'src/modules/database/database.service';
-import { ERRORS } from 'src/language/en';
+import { TOKEN_STRATEGY } from 'src/shared/constants/auth';
+import { DatabaseService } from 'src/database/database.service';
+import { ERRORS } from 'src/shared/language/en';
 import { ITokenStrategy } from '../interface';
 
 @Injectable()

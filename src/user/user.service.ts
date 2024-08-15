@@ -12,7 +12,7 @@ import {
 } from 'src/util/dbHelper';
 import { IUpdateUser } from './interface';
 import { UserRepository } from './user.repository';
-import { ERRORS, MESSAGES } from 'src/language/en';
+import { ERRORS, MESSAGES } from 'src/shared/language/en';
 import { PaginationQuery } from 'src/shared/interface';
 
 @Injectable()

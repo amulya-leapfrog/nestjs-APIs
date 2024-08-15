@@ -3,7 +3,7 @@ import { ConflictException, Injectable, NotFoundException } from '@nestjs/common
 
 import { ICreateBook } from './interface';
 import { BookRepository } from './book.repository';
-import { ERRORS, MESSAGES } from 'src/language/en';
+import { ERRORS, MESSAGES } from 'src/shared/language/en';
 import { PaginationQuery } from 'src/shared/interface';
 import { buildMeta, getPaginationOptions } from 'src/util/dbHelper';
 

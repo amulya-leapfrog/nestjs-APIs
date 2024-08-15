@@ -1,9 +1,9 @@
 import * as bcrypt from 'bcrypt';
 import serverConfig from 'src/config';
 import { JwtService } from '@nestjs/jwt';
-import { TOKEN_EXPIRY } from 'src/constants/auth';
-import { PASSWORD_SALT } from 'src/constants/user';
-import { ERRORS, MESSAGES } from 'src/language/en';
+import { TOKEN_EXPIRY } from 'src/shared/constants/auth';
+import { PASSWORD_SALT } from 'src/shared/constants/user';
+import { ERRORS, MESSAGES } from 'src/shared/language/en';
 import { AuthRepository } from './auth.repository';
 import { ForbiddenException, Injectable } from '@nestjs/common';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
@@ -18,7 +18,7 @@ export class AuthService {
 
   async login(data: ILogin) {
     const user = await this.authRepository.login(data);
-
+    
     if (!user) {
       throw new ForbiddenException(ERRORS.INVALID_CREDENTIALS);
     }

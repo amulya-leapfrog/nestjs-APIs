@@ -1,8 +1,8 @@
 import { User } from '@prisma/client';
-import { DATE_FORMAT } from 'src/constants/date';
+import { DATE_FORMAT } from 'src/shared/constants/date';
 import { DateTime } from 'luxon';
 import { PaginationQuery } from 'src/shared/interface';
-import { DEFAULT_PAGE, DEFAULT_PAGE_SIZE } from 'src/constants/pagination';
+import { DEFAULT_PAGE, DEFAULT_PAGE_SIZE } from 'src/shared/constants/pagination';
 
 export const extractUserData = (data: User) => {
   return {
