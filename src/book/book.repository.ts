@@ -77,13 +77,13 @@ export class BookRepository {
     });
   }
 
-  create(authorId: number, data: ICreateBook) {
-    return this.dbConn.book.create({
-      data: {
-        title: data.title,
-        description: data.description,
+  create(authorId: number, data: ICreateBook[]) {
+    return this.dbConn.book.createMany({
+      data: data.map((book) => ({
+        title: book.title,
+        description: book.description,
         authorId: authorId,
-      },
+      })),
     });
   }
 

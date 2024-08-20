@@ -1,5 +1,9 @@
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
-import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 
 import { ICreateBook } from './interface';
 import { BookRepository } from './book.repository';
@@ -30,7 +34,7 @@ export class BookService {
     return { data, meta };
   }
 
-  async fetchById(bookId:number){
+  async fetchById(bookId: number) {
     const book = await this.bookRepository.fetchById(bookId);
 
     if (!book) {
@@ -64,8 +68,8 @@ export class BookService {
 
   async create(authorId: number, data: ICreateBook) {
     try {
-      await this.bookRepository.create(authorId, data);
-      
+      await this.bookRepository.create(authorId, [data]);
+
       return { message: MESSAGES.BOOK_CREATE_SUCCESS };
     } catch (error) {
       if (
@@ -82,7 +86,7 @@ export class BookService {
   async update(authorId: number, bookId: number, data: ICreateBook) {
     try {
       await this.bookRepository.update(authorId, bookId, data);
-      
+
       return { message: MESSAGES.BOOK_UPDATE_SUCCESS };
     } catch (error) {
       if (
@@ -91,7 +95,7 @@ export class BookService {
       ) {
         throw new NotFoundException(ERRORS.BOOK_NOT_FOUND);
       }
-      
+
       throw error;
     }
   }
@@ -99,7 +103,7 @@ export class BookService {
   async delete(authorId: number, bookId: number) {
     try {
       await this.bookRepository.delete(authorId, bookId);
-      
+
       return { message: MESSAGES.BOOK_DELETE_SUCCESS };
     } catch (error) {
       if (
@@ -108,7 +112,7 @@ export class BookService {
       ) {
         throw new NotFoundException(ERRORS.BOOK_NOT_FOUND);
       }
-      
+
       throw error;
     }
   }

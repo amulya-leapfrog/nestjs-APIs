@@ -3,4 +3,5 @@ export interface ICreateBook {
   description: string;
 }
 
-export interface IUpdateBook extends ICreateBook{}
+
+export interface IUpdateBook extends ICreateBook {}
