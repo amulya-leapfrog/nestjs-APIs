@@ -1,14 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { Kafka } from 'kafkajs';
-import {
-  topic,
-  topicName,
-} from 'src/shared/constants/kafka';
+import { savedTopics } from 'src/shared/constants/kafka';
 
 @Injectable()
 export class ProducerFactory {
   private readonly kafka = new Kafka({
-    clientId: 'my-app',
+    clientId: 'my-app-producer',
     brokers: ['localhost:9092'],
   });
 
@@ -16,10 +13,14 @@ export class ProducerFactory {
 
   async kafkaProduce() {
     await this.producer.connect();
-    await this.producer.send({
-      topic: topicName,
-      messages: [{ value: JSON.stringify(topic) }],
-    });
+    await Promise.all(
+      savedTopics.map(async (topic, index) => {
+        await this.producer.send({
+          topic: `topic-${index + 1}`,
+          messages: [{ value: JSON.stringify(topic) }],
+        });
+      }),
+    );
     await this.producer.disconnect();
   }
 }
