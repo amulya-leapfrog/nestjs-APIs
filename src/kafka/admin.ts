@@ -1,4 +1,5 @@
 import { Kafka } from 'kafkajs';
+import { namedTopics } from 'src/kafka/constants/kafka';
 
 const kafka = new Kafka({
   clientId: 'my-app-admin',
@@ -10,8 +11,7 @@ const admin = kafka.admin();
 export const deleteExistingTopics = async () => {
   try {
     await admin.connect();
-    const topics = await getTopics();
-    await admin.deleteTopics({ topics });
+    await admin.deleteTopics({ topics: namedTopics });
   } catch (error) {
     console.error('Error fetching topics:', error);
   } finally {

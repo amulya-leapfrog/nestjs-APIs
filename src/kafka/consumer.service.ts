@@ -1,7 +1,7 @@
 import { Injectable, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
 import { Kafka } from 'kafkajs';
 import { BookRepository } from 'src/book/book.repository';
-import { namedTopics, userIds } from 'src/shared/constants/kafka';
+import { namedTopics, userIds } from 'src/kafka/constants/kafka';
 import { getTopics } from './admin';
 
 @Injectable()
@@ -48,7 +48,7 @@ export class ConsumerFactory implements OnModuleInit, OnModuleDestroy {
 
         await this.bookRepo.create(
           authorId,
-          JSON.parse(message.value.toString()),
+          [JSON.parse(message.value.toString())],
         );
 
         console.log({
