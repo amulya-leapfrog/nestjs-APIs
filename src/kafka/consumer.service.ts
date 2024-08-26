@@ -2,7 +2,7 @@ import { Injectable, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
 import { Kafka } from 'kafkajs';
 import { BookRepository } from 'src/book/book.repository';
 import { namedTopics, userIds } from 'src/kafka/constants/kafka';
-import { getTopics } from './admin';
+import { deleteExistingTopics, getTopics } from './admin';
 
 @Injectable()
 export class ConsumerFactory implements OnModuleInit, OnModuleDestroy {
@@ -14,6 +14,7 @@ export class ConsumerFactory implements OnModuleInit, OnModuleDestroy {
   });
 
   private readonly consumer = this.kafka.consumer({ groupId: 'test-group' });
+  private readonly admin = this.kafka.admin();
 
   async onModuleInit() {
     await this.kafkaConsume();
@@ -26,29 +27,42 @@ export class ConsumerFactory implements OnModuleInit, OnModuleDestroy {
   private async kafkaConsume() {
     await this.consumer.connect();
 
-    const topicsList = await getTopics();
+    await deleteExistingTopics();
 
-    const filteredTopics = topicsList
-      .filter((topic) => namedTopics.includes(topic))
-      .sort();
+    await this.consumer.subscribe({
+      topics: namedTopics,
+      fromBeginning: true,
+    });
 
-    await Promise.all(
-      filteredTopics.map(async (_, index) => {
-        await this.consumer.subscribe({
-          topic: `topic-${index + 1}`,
-          fromBeginning: true,
-        });
-      }),
-    );
+    let currentTopic = 'topic_1';
 
     await this.consumer.run({
       eachMessage: async ({ topic, partition, message }) => {
-        const topicIndex = filteredTopics.indexOf(topic);
+        if (currentTopic === 'topic_1') {
+          this.consumer.pause([
+            { topic: 'topic_2', partitions: [0] },
+            { topic: 'topic_3', partitions: [0] },
+          ]);
+        } else if (currentTopic === 'topic_2') {
+          this.consumer.pause([
+            { topic: 'topic_1', partitions: [0] },
+            { topic: 'topic_3', partitions: [0] },
+          ]);
+        } else if (currentTopic === 'topic_3') {
+          this.consumer.pause([
+            { topic: 'topic_1', partitions: [0] },
+            { topic: 'topic_2', partitions: [0] },
+          ]);
+        }
+
+        const lastOffset = await this.admin.fetchTopicOffsets(topic);
+
+        const topicIndex = namedTopics.indexOf(topic);
         const authorId = userIds[topicIndex];
 
         await this.bookRepo.create(
           authorId,
-          [JSON.parse(message.value.toString())],
+          JSON.parse(message.value.toString()),
         );
 
         console.log({
@@ -56,7 +70,37 @@ export class ConsumerFactory implements OnModuleInit, OnModuleDestroy {
           authorId,
           partition,
           value: JSON.parse(message.value.toString()),
+          key: JSON.parse(message.key.toString()),
+          offset: JSON.parse(message.offset),
         });
+
+        if (lastOffset[0].offset == JSON.parse(message.offset) + 1) {
+          if (currentTopic === 'topic_1') {
+            console.log('Should go to topic 2');
+            currentTopic = 'topic_2';
+            this.consumer.resume([{ topic: 'topic_2', partitions: [0] }]);
+            this.consumer.pause([
+              { topic: 'topic_1', partitions: [0] },
+              { topic: 'topic_3', partitions: [0] },
+            ]);
+          } else if (currentTopic === 'topic_2') {
+            console.log('Should go to topic 3');
+            currentTopic = 'topic_3';
+            this.consumer.resume([{ topic: 'topic_3', partitions: [0] }]);
+            this.consumer.pause([
+              { topic: 'topic_1', partitions: [0] },
+              { topic: 'topic_2', partitions: [0] },
+            ]);
+          } else if (currentTopic === 'topic_3') {
+            console.log('Should go to topic 1');
+            currentTopic = 'topic_1';
+            this.consumer.resume([{ topic: 'topic_1', partitions: [0] }]);
+            this.consumer.pause([
+              { topic: 'topic_2', partitions: [0] },
+              { topic: 'topic_3', partitions: [0] },
+            ]);
+          }
+        }
       },
     });
   }

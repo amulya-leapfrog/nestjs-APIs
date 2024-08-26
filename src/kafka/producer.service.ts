@@ -28,13 +28,18 @@ export class ProducerFactory {
     let topicIndex = 0;
     for (const topic of savedTopics) {
       topicIndex += 1;
+      let batchNumber = 0;
       const messages = splitIntoBatches(topic, batchSize);
       for (const batch of messages) {
+        batchNumber += 1;
         await this.producer.send({
-          topic: `topic-${topicIndex}`,
-          messages: batch.map((msg: ITopic) => ({
-            value: JSON.stringify(msg),
-          })),
+          topic: `topic_${topicIndex}`,
+          messages: [
+            {
+              key: `${topicIndex}${batchNumber}`,
+              value: JSON.stringify(batch),
+            },
+          ],
         });
       }
     }
